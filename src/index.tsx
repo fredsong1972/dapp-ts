@@ -1,8 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import { StyledEngineProvider } from '@mui/material/styles';
-import Demo from './demo';
+import App from './App'
 import reportWebVitals from './reportWebVitals';
 
 
@@ -11,7 +10,7 @@ const root = ReactDOM.createRoot(
 );
 root.render(
   <React.StrictMode>
-    < Demo />
+    < App />
   </React.StrictMode>
 );
 

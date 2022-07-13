@@ -39,7 +39,7 @@ interface Props {
    * You won't need it on your project.
    */
   window?: () => Window;
-  children: React.ReactElement;
+  children?: React.ReactElement;
 }
 
 interface IWallet {
@@ -49,6 +49,8 @@ interface IWallet {
   contractSymbol: string;
   contractBaseTokenURI: string;
   contractOwnerAddress: string;
+  contractPrice: string;
+  isOwner: boolean;
 }
 
 interface IService {
@@ -73,7 +75,7 @@ function HideOnScroll(props: Props) {
 
   return (
     <Slide appear={false} direction="down" in={!trigger}>
-      {children}
+      {children!}
     </Slide>
   );
 }
@@ -85,7 +87,9 @@ export default function HideAppBar(props: Props,) {
     contractSymbol: "",
     contractAddress: "",
     contractBaseTokenURI: "",
-    contractOwnerAddress: ""
+    contractOwnerAddress: "",
+    contractPrice: "",
+    isOwner: false
   });
 
   const [nftCollection, setNFTCollection] = React.useState<string[]>([]);
@@ -132,13 +136,17 @@ export default function HideAppBar(props: Props,) {
       const baseTokenURI = await contract.baseTokenURI();
       const balance = await (await contract.balanceOf(accounts[0])).toNumber();
       const ethBalance = ethers.utils.formatEther(await provider.getBalance(accounts[0]));
+      const isOwner = (ownerAddress.toLowerCase() === accounts[0].toLowerCase());
+      const price = ethers.utils.formatEther(await contract.PRICE());
       setState({
         iconColor: "success",
         connectedWallet: accounts[0],
         contractSymbol: symbol,
         contractAddress: contract.address,
         contractBaseTokenURI: baseTokenURI,
-        contractOwnerAddress: ownerAddress
+        contractOwnerAddress: ownerAddress,
+        contractPrice: `${price} ETH`,
+        isOwner: isOwner
       });
 
       setService({
@@ -227,7 +235,7 @@ export default function HideAppBar(props: Props,) {
             <Button variant="contained" onClick={connectWallet}>Connect</Button>
             <Button variant="contained" disabled={!state.contractBaseTokenURI} onClick={loadNFTCollection}>Load NFT Collection</Button>
             <Button variant="contained" disabled={!state.contractBaseTokenURI} onClick={handleOpen}>Mint NFT</Button>
-            <Button variant="contained" disabled={!state.contractOwnerAddress && state.contractOwnerAddress === service.account} onClick={handleOpenWithdrawal}>Withdrawal</Button>
+            <Button variant="contained" disabled={!state.isOwner} onClick={handleOpenWithdrawal}>Withdrawal</Button>
           </Stack>
           <Stack direction="column" spacing={10} sx={{ margin: 5 }}>
             <Stack direction="row" spacing={2} sx={{ margin: 5 }}>
@@ -281,6 +289,11 @@ export default function HideAppBar(props: Props,) {
                 <Stack spacing={1} sx={{ width: 500 }}>
                   <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
                     <TextField id="mint_account" label="Account" sx={{ width: 500 }} variant="standard" value={service.account}
+                      inputProps={{ readOnly: true}}
+                    />
+                  </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
+                    <TextField id="price" label="NFT Price" sx={{ width: 500 }} variant="standard" value={state.contractPrice}
                       inputProps={{ readOnly: true}}
                     />
                   </Box>
